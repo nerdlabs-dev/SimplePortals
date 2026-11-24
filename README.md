@@ -1,41 +1,45 @@
-# How to use SimplePortals API in your plugin
+# SimplePortals (lean rewrite)
 
-In order to properly use SimplePortals you will need to be able to retrieve the plugin's instance. You can do this by following these instructions:
+Region portals for Paper 26.x: walk into a box and get teleported, sent to another server behind
+Velocity/BungeeCord, or have commands run. Same commands as XZot1K's original SimplePortals, rewritten
+from scratch on the plain Paper API, with no NMS, no reflection and no Minecraft-version checks, so a new
+Minecraft drop normally only needs the `paper-api` version in `pom.xml` bumped.
 
-1. Download the SimplePortals plugin and add it to your plugin's dependencies.  
-2. Make sure your plugin can grab the SimplePortals instance from your Main class file like below:  
+## Build
+
+Requires JDK 25 and Maven.
 
 ```
-import org.bukkit.plugin.java.JavaPlugin;
-import xzot1k.plugins.sp.SimplePortals;
-
-public class Main extends JavaPlugin {
-
-    private SimplePortals simplePortals;
-
-    @Override
-    public void onEnable() {
-        if (!isSimplePortalsInstalled()) {
-            getServer().getPluginManager().disablePlugin(this); // disable plugin since SimplePortals is NOT installed.
-            return;
-        }
-
-        // SimplePortals was found and now can be accessed with the getSimplePortals() getter.
-    }
-
-    // This method tells you whether SimplePortals is installed or not.
-    private boolean isSimplePortalsInstalled() {
-        if (getServer().getPluginManager().getPlugin("SimplePortals") != null) {
-            this.simplePortals = SimplePortals.getPluginInstance();
-            return true;
-        }
-        return false;
-    }
-
-    public SimplePortals getSimplePortals() { return simplePortals; }
-
-}
+mvn package
 ```
 
-3. Once 1 and 2 are completed, add "depend: [SimplePortals]" or related thigns inside your plugin.yml (This step is optional, but never hurts to make sure SimplePortals is installed).  
-4. Everything should be all set. As a test, call the getSimplePortals() method from your Main class and you will be able to access the Manager class!
+The jar is `target/SimplePortals-2.0.0.jar`.
+
+## Quick start
+
+1. `/sp sm`, then left-click one corner and right-click the opposite corner.
+2. `/sp create hub`
+3. Either `/sp sl hub` (teleport to where you stand) or `/sp ss hub survival` (send to the `survival` server).
+4. Optional: `/sp fill hub nether_portal`, `/sp message hub &aOff to survival!:TITLE`, `/sp delay hub 2`.
+
+`/sp` with no arguments lists every command.
+
+## Cross-server landing spot (`/sp ssl`)
+
+Without `/sp ssl`, players arrive at the destination server's normal spawn. To land them somewhere specific:
+
+* Put SimplePortals on the destination server too.
+* On every server, set `server-name` to that server's name in `velocity.toml`, and point `transfer-folder`
+  at the same shared folder (the default works when all servers live side by side in one parent folder).
+* `/sp ssl <portal> <world> <x> <y> <z> <yaw> <pitch>`
+
+Velocity needs `bungee-plugin-message-channel = true` in `velocity.toml` (this is the default).
+
+## What changed from the original
+
+* Portal names are one word, without spaces.
+* No MySQL; cross-server landing spots go through the shared folder.
+* Existing `portals` data from the old plugin isn't imported, so portals need to be recreated.
+* Command lines default to running as console; add `:PLAYER` to run as the player.
+
+Based on [SimplePortals](https://github.com/XZot1K/SimplePortals) by XZot1K (MIT).
